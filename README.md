@@ -3,13 +3,13 @@
 ## 安装
 
 ```shell script
-eeui plugin install https://github.com/aipaw/eeui-plugin-audio
+eeui plugin install https://github.com/mrz9/recorder
 ```
 
 ## 卸载
 
 ```shell script
-eeui plugin uninstall https://github.com/aipaw/eeui-plugin-audio
+eeui plugin uninstall https://github.com/mrz9/recorder
 ```
 
 ## 引用
