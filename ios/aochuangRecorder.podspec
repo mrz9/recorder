@@ -18,8 +18,11 @@ Pod::Spec.new do |s|
   s.source_files  = "aochuangRecorder", "**/**/*.{h,m,mm,c}"
   s.exclude_files = "Source/Exclude"
   s.resources = 'aochuangRecorder/resources/*.*'
-  s.platform     = :ios, "8.0"
+  s.platform     = :ios, "10.0"
   s.requires_arc = true
+  s.frameworks = "AudioToolbox"
+  
+  s.vendored_libraries = 'AMR/libopencore-amrnb.a', 'AMR/libopencore-amrwb.a'
 
   s.dependency 'WeexSDK'
   s.dependency 'eeui'

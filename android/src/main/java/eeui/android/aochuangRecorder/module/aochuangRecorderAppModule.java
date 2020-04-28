@@ -31,6 +31,7 @@ public class aochuangRecorderAppModule extends WXModuleBase {
 
     @JSMethod
     public void start(HashMap<String, String> params, final JSCallback jsCallback){
+        Log.d("aochuangRecorder","start");
         boolean permAllow = PermissionChecker.lacksPermissions(mWXSDKInstance.getContext(), Manifest.permission.RECORD_AUDIO, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
         if (permAllow) {
@@ -59,6 +60,7 @@ public class aochuangRecorderAppModule extends WXModuleBase {
 
     @JSMethod
     public void stop(final JSCallback jsCallback){
+        Log.d("aochuangRecorder","stop");
         RecorderModule.getInstance().stop(new eeui.android.aochuangRecorder.module.recorder.ModuleResultListener() {
             @Override
             public void onResult(Object o) {
@@ -69,6 +71,7 @@ public class aochuangRecorderAppModule extends WXModuleBase {
 
     @JSMethod
     public void finish(final JSCallback jsCallback){
+        Log.d("aochuangRecorder","finish");
         RecorderModule.getInstance().finish(new eeui.android.aochuangRecorder.module.recorder.ModuleResultListener() {
             @Override
             public void onResult(Object o) {

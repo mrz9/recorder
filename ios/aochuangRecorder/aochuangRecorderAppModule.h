@@ -8,5 +8,4 @@
 
 @interface aochuangRecorderAppModule : NSObject <WXModuleProtocol>
 
-
 @end
