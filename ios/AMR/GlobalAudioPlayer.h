@@ -8,9 +8,17 @@
 
 #import <Foundation/Foundation.h>
 
+@protocol PlayerDelegate <NSObject>
+
+- (void)onPlayFinish;
+
+@end
+
 @interface GlobalAudioPlayer : NSObject
 
 + (instancetype)shareInstance;
+
+@property(nonatomic, weak) id<PlayerDelegate> delegate;
 
 - (BOOL)isPlaying;
 - (BOOL)play:(NSString*)sUrl;

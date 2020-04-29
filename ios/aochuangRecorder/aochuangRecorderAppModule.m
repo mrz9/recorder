@@ -9,10 +9,11 @@
 #import "GlobalAudioPlayer.h"
 #import "RecorderUtil.h"
 
-@interface aochuangRecorderAppModule ()<AMRRecorderDelegate>
+@interface aochuangRecorderAppModule ()<AMRRecorderDelegate, PlayerDelegate>
 
 @property (nonatomic, strong) AMRRecorder *recorder;
-@property (nonatomic, strong) WXModuleCallback callback;
+@property (nonatomic, strong) WXModuleKeepAliveCallback callback;
+@property (nonatomic, strong) WXModuleKeepAliveCallback playCallback;
 
 @end
 
@@ -28,50 +29,50 @@ WX_EXPORT_METHOD(@selector(play:::))
 WX_EXPORT_METHOD(@selector(stopPlay:))
 
 - (AMRRecorder*)getAmrRecorder{
-    static dispatch_once_t onceToken;
     static AMRRecorder *instance;
-    dispatch_once(&onceToken, ^{
-        instance = [[AMRRecorder alloc] initWithDelegate:self];
-    });
+    if (instance == nil){
+        instance = [[AMRRecorder alloc] init];
+    }
+    instance.delegate = self;
     return instance;
 }
 
 //回调演示
-- (void)start:(NSDictionary*)options :(WXModuleCallback)callback {
+- (void)start:(NSDictionary*)options :(WXModuleKeepAliveCallback)callback {
     [[self getAmrRecorder] startRecord];
     if (callback != nil){
-        callback(@{@"message":@"success", @"code":@1});
+        callback(@{@"message":@"success", @"code":@1}, true);
     }
 }
 
-- (void)stop:(NSDictionary*)options :(WXModuleCallback)callback {
+- (void)stop:(NSDictionary*)options :(WXModuleKeepAliveCallback)callback {
     [[self getAmrRecorder] cancelRecord];
     if (callback != nil){
-        callback(@{@"message":@"success", @"code":@1});
+        callback(@{@"message":@"success", @"code":@1}, true);
     }
 }
 
-- (void)finish:(WXModuleCallback)callback {
+- (void)finish:(WXModuleKeepAliveCallback)callback {
     self.callback = callback;
     [[self getAmrRecorder] finish];
 }
 
-- (void)play:(NSString*)url :(NSInteger)mode :(WXModuleCallback)callback {
-//    url = @"http://static1.oasystem.com/file/010/4dca3a3c103849509956200af692f52a.amr";
-//    url = @"http://static1.oasystem.com/file/080/4ec8c04c02ddad5da2f0cb296e1b8a18.amr";
+- (void)play:(NSString*)url :(NSInteger)mode :(WXModuleKeepAliveCallback)callback {
+    self.playCallback = callback;
     if ([url hasPrefix:@"http://"] == YES || [url hasPrefix:@"https://"] == YES || [url hasPrefix:@"ftp://"] == YES){
         [RecorderUtil downloadFile:url handler:^(NSString * _Nonnull wavPath) {
             if (wavPath != nil){
+                [GlobalAudioPlayer shareInstance].delegate = self;
                 BOOL result = [[GlobalAudioPlayer shareInstance] play:wavPath];
                 if (result == YES){
                     if (callback != nil){
-                        callback(@{@"message":wavPath, @"code":@1});
+                        callback(@{@"message":@"start", @"code":@1}, true);
                     }
                     return;
                 }
             }
             if (callback != nil){
-                callback(@{@"message":@"error", @"code":@-1});
+                callback(@{@"message":@"error", @"code":@-1}, true);
             }
         }];
     }else{
@@ -81,24 +82,25 @@ WX_EXPORT_METHOD(@selector(stopPlay:))
             wavPath = [RecorderUtil ConvertAmrToWav:url];
         }
         if (wavPath != nil && wavPath.length > 0 && [wavPath hasSuffix:@".wav"] == YES){
+            [GlobalAudioPlayer shareInstance].delegate = self;
             BOOL result = [[GlobalAudioPlayer shareInstance] play:wavPath];
             if (result == YES){
                 if (callback != nil){
-                    callback(@{@"message":wavPath, @"code":@1});
+                    callback(@{@"message":@"start", @"code":@1}, true);
                 }
                 return;
             }
         }
         if (callback != nil){
-            callback(@{@"message":@"error", @"code":@-1});
+            callback(@{@"message":@"error", @"code":@-1}, true);
         }
     }
 }
 
-- (void)stopPlay:(WXModuleCallback)callback {
+- (void)stopPlay:(WXModuleKeepAliveCallback)callback {
     [[GlobalAudioPlayer shareInstance] stopPlay];
     if (callback != nil) {
-        callback(@{@"message":@"success", @"code":@1});
+        callback(@{@"message":@"success", @"code":@1}, true);
     }
 }
 
@@ -107,7 +109,7 @@ WX_EXPORT_METHOD(@selector(stopPlay:))
 
 - (void)failRecord {
     if (self.callback != nil) {
-        self.callback(@{@"message":@"error", @"code":@-1});
+        self.callback(@{@"message":@"error", @"code":@-1}, true);
     }
 }
 
@@ -115,7 +117,14 @@ WX_EXPORT_METHOD(@selector(stopPlay:))
  
 - (void)onConvertSuccess:(NSString*)amrPath fileName:(NSString*)fileName path:(NSString*)wavPath recordTime:(double)time{
     if (self.callback != nil) {
-        self.callback(@{@"path":amrPath, @"wavPath":wavPath, @"duraction":[NSNumber numberWithDouble:time]});
+        self.callback(@{@"message":@"success", @"path":amrPath, @"wavPath":wavPath, @"duraction":[NSNumber numberWithDouble:time]}, true);
+    }
+}
+
+#pragma mark - PlayerDelegate Method
+- (void)onPlayFinish{
+    if (self.playCallback != nil){
+        self.playCallback(@{@"message":@"completion", @"code":@1}, true);
     }
 }
 

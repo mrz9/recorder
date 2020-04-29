@@ -72,6 +72,9 @@
     playingUrl = nil;
     self.player.delegate = nil;
     self.player = nil;
+    if (self.delegate != nil){
+        [self.delegate onPlayFinish];
+    }
 }
 
 //震动

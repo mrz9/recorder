@@ -72,15 +72,17 @@ public class EAudioManager {
             File file = new File(dir, fileNameString);
             //获取文件
             mCurrentFilePathString = file.getAbsolutePath();
-
+            Log.d("EAudioManager","mCurrentFilePathString = "+mCurrentFilePathString);
             mRecorder = new MediaRecorder();
             // 设置输出文件
             mRecorder.setOutputFile(file.getAbsolutePath());
             // 设置meidaRecorder的音频源是麦克风
             mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
 //            mRecorder.setAudioEncodingBitRate(16);
+            mRecorder.setAudioChannels(1);
+            mRecorder.setAudioSamplingRate(8000);
             // 设置文件音频的输出格式为amr
-            mRecorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT);
+            mRecorder.setOutputFormat(MediaRecorder.OutputFormat.AMR_NB);
 //            mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
             // 设置音频的编码格式为amr。这里采用AAC主要为了适配IOS，保证在IOS上可以正常播放。
             mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);

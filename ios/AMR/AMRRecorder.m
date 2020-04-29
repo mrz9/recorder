@@ -41,6 +41,21 @@
     return self;
 }
 
+- (instancetype)init{
+    if (self = [super init]) {
+        self.recordParams = [[NSMutableDictionary alloc] init];
+        [self.recordParams setValue :[NSNumber numberWithInt:kAudioFormatLinearPCM] forKey: AVFormatIDKey];//录音格式 无法使用
+        [self.recordParams setValue :[NSNumber numberWithFloat:8000.0] forKey: AVSampleRateKey];//采样率 44100.0
+        [self.recordParams setValue :[NSNumber numberWithInt:1] forKey: AVNumberOfChannelsKey];//通道数
+        [self.recordParams setValue:[NSNumber numberWithInt:AVAudioQualityMin] forKey:AVEncoderAudioQualityKey];//音频质量,采样质量
+        [self.recordParams setValue:[NSNumber numberWithInt:16] forKey:AVLinearPCMBitDepthKey];//比特率 一般设16 32
+        [self.recordParams setValue:[NSNumber numberWithBool:NO] forKey:AVLinearPCMIsNonInterleaved];//AVLinear PCMI 非交叉密钥
+        [self.recordParams setValue:[NSNumber numberWithBool:NO] forKey:AVLinearPCMIsFloatKey];//采样信号是整数还是浮点数他的值是波尔值也是PCM专属
+        [self.recordParams setValue:[NSNumber numberWithBool:NO] forKey:AVLinearPCMIsBigEndianKey];//即大端模式和小端模式，可以理解为一段数据再内存中的起始位置以及终止位置他的值是波尔值这个key也是PCM专属
+    }
+    return self;
+}
+
 - (void)startRecord{
     [self startRecord:nil];
 }
@@ -85,7 +100,7 @@
     self.timer = nil;
     double recordTime = self.recorder.currentTime;
     [self.recorder stop];
-    if (recordTime > 1) {//录音时间大于1秒, 录音有效
+    if (recordTime > 0) {//录音时间大于1秒, 录音有效
         [self parseToAMR: recordTime];
     }else {
         if ([[NSFileManager defaultManager] fileExistsAtPath:self.recorder.url.path]) {
@@ -112,6 +127,8 @@
 
 - (void)parseToAMR:(double)recordTime{
     NSString *wavFilePath = self.CAFPath;
+    NSData *voiceData = [NSData dataWithContentsOfFile:wavFilePath];
+    NSLog(@"wav = %@", voiceData);
     NSString *amrFilePath = [RecorderUtil CreateAmrFile:nil];
     if (self.delegate && [_delegate respondsToSelector:@selector(onConvertBegin)]) {
         [_delegate onConvertBegin];
